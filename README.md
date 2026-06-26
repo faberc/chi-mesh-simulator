@@ -51,3 +51,6 @@ An interactive, visually premium, zero-dependency browser simulator designed to 
 1. Initialize dependencies (optional CLI test runners require Node.js):
    ```bash
    npm install
+
+## Link to the Hosted Page
+[https://faberc.github.io/chi-mesh-simulator/](https://faberc.github.io/chi-mesh-simulator/)
