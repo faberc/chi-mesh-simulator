@@ -1,6 +1,6 @@
 **Disclaimer**: This is a nearly 100% vibe-coded project. I basically just gave AntiGravity a prompt to generate a browser based simulator for the AMBA CHI protocol to use a multi-agent setup and it went to town. This was done as a learning exercise for me to learn how to work with multi-agent flows, working in the Antigravity IDE, and also I wanted to understand the AMBA CHI protocol a bit better. I have not validated that this is a completely accurate representation of the AMBA CHI protocol.
 
-Everything that follows is pretty much purely AI-generated.
+Everything that follows is pretty much purely AI-generated. Other than some basic HTML I did when I was 10 years old (all I remember is `<a href>`), I have very little experience with coding webpages, nothing to say of interactive ones with animations and stuff.
 
 ---
 
