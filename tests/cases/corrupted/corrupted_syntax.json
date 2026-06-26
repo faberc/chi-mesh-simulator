@@ -1,0 +1,5 @@
+{
+  "name": "Corrupted Syntax",
+  "tier": 1,
+  "grid": { "width": 2, "height": 2 }
+  // Syntax error here: missing closing brace/comma

@@ -1,0 +1,18 @@
+{
+  "name": "Corrupted Transaction Coordinates",
+  "tier": 1,
+  "grid": { "width": 2, "height": 2 },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" },
+      { "x": 0, "y": 1, "type": "HN_F" }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "type": "ReadShared",
+      "address": "0x10"
+    }
+  ]
+}

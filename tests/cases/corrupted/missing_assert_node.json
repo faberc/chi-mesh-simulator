@@ -1,0 +1,23 @@
+{
+  "name": "Missing Assert Node Scenario",
+  "tier": 1,
+  "grid": {
+    "width": 2,
+    "height": 2
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" }
+    ]
+  },
+  "transactions": [],
+  "assertions": {
+    "final_cache_states": [
+      {
+        "address": "0x10",
+        "state": "UC",
+        "data": 42
+      }
+    ]
+  }
+}

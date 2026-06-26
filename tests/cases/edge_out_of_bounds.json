@@ -1,0 +1,26 @@
+{
+  "name": "Edge Case - Coordinates Out of Bounds",
+  "tier": 5,
+  "grid": {
+    "width": 2,
+    "height": 2
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F", "cache": { "0x10": { "state": "I", "data": null } } },
+      { "x": 0, "y": 1, "type": "HN_F", "directory": {} },
+      { "x": 1, "y": 1, "type": "SN_F", "memory": { "0x10": 42 } },
+      { "x": 2, "y": 0, "type": "RN_F", "cache": { "0x10": { "state": "I", "data": null } } }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [2, 0],
+      "dest": [0, 1],
+      "type": "ReadShared",
+      "address": "0x10"
+    }
+  ],
+  "assertions": {}
+}

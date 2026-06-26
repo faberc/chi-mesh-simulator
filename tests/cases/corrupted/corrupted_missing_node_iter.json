@@ -1,0 +1,8 @@
+{
+  "name": "Corrupted Node Iteration",
+  "tier": 1,
+  "grid": { "width": 2, "height": 2 },
+  "initial_state": {
+    "nodes": "not_an_array_should_be_array"
+  }
+}

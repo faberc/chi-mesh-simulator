@@ -1,0 +1,24 @@
+{
+  "name": "Invalid Coordinates Scenario",
+  "tier": 1,
+  "grid": {
+    "width": 2,
+    "height": 2
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" },
+      { "x": 3, "y": 3, "type": "HN_F" }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [0, 0],
+      "dest": [3, 3],
+      "type": "ReadShared",
+      "address": "0x10"
+    }
+  ],
+  "assertions": {}
+}

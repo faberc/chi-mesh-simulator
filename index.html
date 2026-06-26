@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMBA CHI Mesh Protocol Simulator</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script>
+    (function() {
+      function sendLog(type, args) {
+        const message = Array.from(args).map(arg => {
+          if (typeof arg === 'object') {
+            try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+          }
+          return String(arg);
+        }).join(' ');
+        fetch('/log', {
+          method: 'POST',
+          body: type + ': ' + message
+        }).catch(() => {});
+      }
+      const originalLog = console.log;
+      const originalWarn = console.warn;
+      const originalError = console.error;
+      console.log = function() {
+        originalLog.apply(console, arguments);
+        sendLog('LOG', arguments);
+      };
+      console.warn = function() {
+        originalWarn.apply(console, arguments);
+        sendLog('WARN', arguments);
+      };
+      console.error = function() {
+        originalError.apply(console, arguments);
+        sendLog('ERROR', arguments);
+      };
+      window.onerror = function(message, source, lineno, colno, error) {
+        sendLog('UNHANDLED ERROR', [message, 'at', source, lineno + ':' + colno]);
+      };
+      window.addEventListener('unhandledrejection', function(event) {
+        sendLog('UNHANDLED REJECTION', [event.reason]);
+      });
+      sendLog('SYSTEM', ['Log redirection initialized. readyState=' + document.readyState]);
+    })();
+  </script>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#00d2ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 17L12 22L22 17" stroke="#9d4edd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M2 12L12 17L22 12" stroke="#00d2ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <h1>AMBA CHI Mesh Simulator</h1>
+    </div>
+    <div class="status-badge" id="sim-status-badge">Idle</div>
+  </header>
+
+  <div class="app-container">
+    <!-- Left Sidebar: Controls & Workload -->
+    <aside class="sidebar">
+      <!-- Manual Injector -->
+      <section class="panel">
+        <h2 class="panel-title">Transaction Injector</h2>
+        <div class="form-group">
+          <label for="inject-type">Transaction Type</label>
+          <select id="inject-type" class="form-select">
+            <option value="ReadShared">ReadShared (Read Shared Line)</option>
+            <option value="ReadUnique">ReadUnique (Read for Exclusive Write)</option>
+            <option value="WriteUnique">WriteUnique (Write Cache Line)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="inject-src-x">Source X Node (RN-F)</label>
+          <input type="number" id="inject-src-x" class="form-input" min="0" max="2" value="0">
+        </div>
+        <div class="form-group">
+          <label for="inject-src-y">Source Y Node (RN-F)</label>
+          <input type="number" id="inject-src-y" class="form-input" min="0" max="2" value="0">
+        </div>
+        <div class="form-group">
+          <label for="inject-addr">Memory Address (Hex)</label>
+          <input type="text" id="inject-addr" class="form-input" value="0x10" placeholder="e.g. 0x10">
+        </div>
+        <div class="form-group" id="inject-data-group">
+          <label for="inject-data">Write Data Value</label>
+          <input type="number" id="inject-data" class="form-input" value="99">
+        </div>
+        <button id="btn-inject" class="btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Inject Transaction
+        </button>
+      </section>
+
+      <!-- Workload Scenario Loader -->
+      <section class="panel">
+        <h2 class="panel-title">Load Custom Workload</h2>
+        <div class="drop-zone" id="workload-dropzone">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Drag & Drop Scenario JSON</span>
+          <span>or click to select file</span>
+          <input type="file" id="workload-file-input" style="display: none;" accept=".json">
+        </div>
+      </section>
+
+      <!-- Verification Suite Panel -->
+      <section class="panel">
+        <h2 class="panel-title">Verification Suite</h2>
+        <div class="suite-item" id="suite-item-read">
+          <div class="suite-header">
+            <span class="suite-name">Read Hit / Miss</span>
+            <span class="suite-badge pending" id="suite-badge-read">Pending</span>
+          </div>
+          <p class="suite-desc">Verify basic read miss to memory followed by a low-latency cache read hit.</p>
+          <button class="btn btn-secondary btn-run-suite" data-suite="read">Run Scenario</button>
+        </div>
+        <div class="suite-item" id="suite-item-write">
+          <div class="suite-header">
+            <span class="suite-name">Concurrent Write Conflict</span>
+            <span class="suite-badge pending" id="suite-badge-write">Pending</span>
+          </div>
+          <p class="suite-desc">Trigger simultaneous writes to the same address, verifying HN-F serialization and invalidation.</p>
+          <button class="btn btn-secondary btn-run-suite" data-suite="write">Run Scenario</button>
+        </div>
+        <div class="suite-item" id="suite-item-snoop">
+          <div class="suite-header">
+            <span class="suite-name">Snoop Invalidation</span>
+            <span class="suite-badge pending" id="suite-badge-snoop">Pending</span>
+          </div>
+          <p class="suite-desc">Validate that a write request triggers SnpCleanInvalid messages to clean other caches.</p>
+          <button class="btn btn-secondary btn-run-suite" data-suite="snoop">Run Scenario</button>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Center Workspace: Visualization & Playback -->
+    <main class="workspace">
+      <div class="workspace-tabs">
+        <button class="tab-btn active" data-tab="grid-view">Grid Visualization</button>
+        <button class="tab-btn" data-tab="sequence-view">Protocol Sequence Diagram</button>
+      </div>
+
+      <!-- Grid View Content -->
+      <div id="grid-view" class="tab-content active">
+        <div class="grid-svg-container" id="svg-container">
+          <!-- SVG generated dynamically by renderer.js -->
+        </div>
+      </div>
+
+      <!-- Sequence View Content -->
+      <div id="sequence-view" class="tab-content">
+        <div class="sequence-container" id="sequence-diagram-container">
+          <!-- SVG sequence diagram generated dynamically -->
+        </div>
+      </div>
+
+      <!-- Simulation Playback Panel -->
+      <div class="playback-controls">
+        <button id="btn-reset" class="control-btn" title="Reset Simulation">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+          </svg>
+        </button>
+        <button id="btn-play-pause" class="control-btn" title="Play / Pause">
+          <svg id="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+        </button>
+        <button id="btn-step" class="control-btn" title="Step One Cycle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="5 4 15 12 5 20 5 4"></polygon>
+            <line x1="19" y1="5" x2="19" y2="19"></line>
+          </svg>
+        </button>
+        <div class="cycle-counter">Cycle: <span id="cycle-count">0</span></div>
+        <div class="form-group" style="flex-direction: row; align-items: center; gap: 8px; margin-left: 10px;">
+          <label for="speed-range" style="white-space: nowrap;">Speed:</label>
+          <input type="range" id="speed-range" min="1" max="10" value="5" style="width: 80px; accent-color: var(--rn-color);">
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Sidebar: Inspector & Log -->
+    <aside class="inspector-bar">
+      <!-- General Simulation Metrics -->
+      <section class="panel">
+        <h2 class="panel-title">Metrics Dashboard</h2>
+        <div class="metric-grid">
+          <div class="metric-card">
+            <span class="metric-label">Hops Count</span>
+            <span class="metric-value" id="metric-hops">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Avg Latency</span>
+            <span class="metric-value" id="metric-latency">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Clicked Node Inspector -->
+      <section class="panel" id="inspector-panel">
+        <h2 class="panel-title">Node Inspector</h2>
+        <div id="inspector-placeholder" style="color: var(--text-secondary); font-size: 0.85rem; text-align: center; padding: 20px 0;">
+          Select a node to inspect its caches, directories, or memory.
+        </div>
+        <div id="inspector-content" style="display: none; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span id="inspect-node-id" style="font-family: var(--font-title); font-weight: 700; font-size: 1.1rem; color: var(--rn-color);">RN_F_0_0</span>
+            <span id="inspect-node-type" class="suite-badge passed">RN-F</span>
+          </div>
+          <div id="inspect-details-block" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Active & Historical Transactions -->
+      <section class="panel">
+        <h2 class="panel-title">Transactions List</h2>
+        <div class="tx-list" id="transaction-log-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- Live Packet Log -->
+      <section class="panel">
+        <h2 class="panel-title">Live Packet Log</h2>
+        <div class="packet-log" id="packet-log-list">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <!-- Interactive SVG Node tooltip overlay -->
+  <div class="svg-tooltip" id="svg-tooltip">
+    <div class="svg-tooltip-header" id="tooltip-header">Node</div>
+    <div id="tooltip-body">Details...</div>
+  </div>
+
+  <script type="module" src="src/ui/main.js"></script>
+</body>
+</html>

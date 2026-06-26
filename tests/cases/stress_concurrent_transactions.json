@@ -1,0 +1,62 @@
+{
+  "name": "Stress Case - High Concurrent Transactions on Same Address",
+  "tier": 5,
+  "grid": {
+    "width": 3,
+    "height": 3
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" },
+      { "x": 2, "y": 0, "type": "RN_F" },
+      { "x": 1, "y": 1, "type": "HN_F" },
+      { "x": 2, "y": 2, "type": "SN_F", "memory": { "0x10": 42 } }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [0, 0],
+      "dest": [1, 1],
+      "type": "ReadShared",
+      "address": "0x10"
+    },
+    {
+      "cycle": 1,
+      "src": [2, 0],
+      "dest": [1, 1],
+      "type": "WriteUnique",
+      "address": "0x10",
+      "data": 99
+    }
+  ],
+  "assertions": {
+    "final_cache_states": [
+      {
+        "node": [2, 0],
+        "address": "0x10",
+        "state": "UC",
+        "data": 99
+      },
+      {
+        "node": [0, 0],
+        "address": "0x10",
+        "state": "I"
+      }
+    ],
+    "final_directory_states": [
+      {
+        "node": [1, 1],
+        "address": "0x10",
+        "sharers": [[2, 0]]
+      }
+    ],
+    "final_memory_states": [
+      {
+        "node": [2, 2],
+        "address": "0x10",
+        "value": 99
+      }
+    ]
+  }
+}

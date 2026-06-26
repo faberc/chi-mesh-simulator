@@ -1,0 +1,26 @@
+{
+  "name": "Corrupted Assertion Path",
+  "tier": 1,
+  "grid": { "width": 2, "height": 2 },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [0, 0],
+      "dest": [0, 1],
+      "type": "ReadShared",
+      "address": "0x10"
+    }
+  ],
+  "assertions": {
+    "routing_paths": [
+      {
+        "txn_index": 0
+      }
+    ]
+  }
+}

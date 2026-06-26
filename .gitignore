@@ -1,0 +1,12 @@
+# Dependency directories
+node_modules/
+
+# OS metadata
+.DS_Store
+
+# Local agent & environment configs
+.gemini/
+.agents/
+
+# Simulation logs & results
+tests/verification_results.json

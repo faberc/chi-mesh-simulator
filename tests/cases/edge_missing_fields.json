@@ -1,0 +1,13 @@
+{
+  "name": "Edge Case - Missing Fields in Scenario",
+  "tier": 5,
+  "grid": {
+    "width": 2,
+    "height": 2
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" }
+    ]
+  }
+}

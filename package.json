@@ -1,0 +1,10 @@
+{
+  "name": "chi-mesh-simulator",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AMBA CHI Mesh Protocol Simulator",
+  "scripts": {
+    "test": "node tests/test_runner.js",
+    "dev": "node tests/dev_server.js"
+  }
+}

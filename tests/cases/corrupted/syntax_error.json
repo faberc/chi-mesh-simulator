@@ -1,0 +1,8 @@
+{
+  "name": "Syntax Error Scenario",
+  "tier": 1,
+  "grid": {
+    "width": 2,
+    "height": 2
+  },
+  "initial_state": {

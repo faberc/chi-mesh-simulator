@@ -1,0 +1,81 @@
+{
+  "name": "Read Hit / Miss Scenario",
+  "tier": 1,
+  "grid": {
+    "width": 2,
+    "height": 2
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" },
+      { "x": 0, "y": 1, "type": "HN_F" },
+      { "x": 1, "y": 1, "type": "SN_F", "memory": { "0x10": 42 } }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [0, 0],
+      "dest": [0, 1],
+      "type": "ReadShared",
+      "address": "0x10"
+    },
+    {
+      "cycle": 20,
+      "src": [0, 0],
+      "dest": [0, 1],
+      "type": "ReadShared",
+      "address": "0x10"
+    }
+  ],
+  "assertions": {
+    "final_cache_states": [
+      {
+        "node": [0, 0],
+        "address": "0x10",
+        "state": "UC",
+        "data": 42
+      }
+    ],
+    "final_directory_states": [
+      {
+        "node": [0, 1],
+        "address": "0x10",
+        "sharers": [[0, 0]]
+      }
+    ],
+    "final_memory_states": [
+      {
+        "node": [1, 1],
+        "address": "0x10",
+        "value": 42
+      }
+    ],
+    "latencies": [
+      {
+        "txn_index": 0,
+        "min_latency": 10,
+        "max_latency": 20
+      },
+      {
+        "txn_index": 1,
+        "min_latency": 1,
+        "max_latency": 2
+      }
+    ],
+    "routing_paths": [
+      {
+        "txn_index": 0,
+        "path": [[0, 0], [0, 1], [1, 1], [0, 1], [0, 0]]
+      },
+      {
+        "txn_index": 1,
+        "path": [[0, 0]]
+      }
+    ],
+    "opcodes_observed": [
+      "ReadShared",
+      "CompData"
+    ]
+  }
+}

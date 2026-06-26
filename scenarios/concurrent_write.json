@@ -1,0 +1,90 @@
+{
+  "name": "Concurrent Write Conflict Scenario",
+  "tier": 2,
+  "grid": {
+    "width": 2,
+    "height": 2
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" },
+      { "x": 1, "y": 0, "type": "RN_F" },
+      { "x": 0, "y": 1, "type": "HN_F" },
+      { "x": 1, "y": 1, "type": "SN_F", "memory": { "0x20": 100 } }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [0, 0],
+      "dest": [0, 1],
+      "type": "WriteUnique",
+      "address": "0x20",
+      "data": 99
+    },
+    {
+      "cycle": 1,
+      "src": [1, 0],
+      "dest": [0, 1],
+      "type": "WriteUnique",
+      "address": "0x20",
+      "data": 88
+    }
+  ],
+  "assertions": {
+    "final_cache_states": [
+      {
+        "node": [0, 0],
+        "address": "0x20",
+        "state": "I",
+        "data": null
+      },
+      {
+        "node": [1, 0],
+        "address": "0x20",
+        "state": "UC",
+        "data": 88
+      }
+    ],
+    "final_directory_states": [
+      {
+        "node": [0, 1],
+        "address": "0x20",
+        "sharers": [[1, 0]]
+      }
+    ],
+    "final_memory_states": [
+      {
+        "node": [1, 1],
+        "address": "0x20",
+        "value": 88
+      }
+    ],
+    "latencies": [
+      {
+        "txn_index": 0,
+        "min_latency": 10,
+        "max_latency": 30
+      },
+      {
+        "txn_index": 1,
+        "min_latency": 10,
+        "max_latency": 45
+      }
+    ],
+    "routing_paths": [
+      {
+        "txn_index": 0,
+        "path": [[0, 0], [0, 1], [1, 1], [0, 1], [0, 0]]
+      },
+      {
+        "txn_index": 1,
+        "path": [[1, 0], [0, 0], [0, 1], [0, 0], [0, 1], [1, 1], [0, 1], [0, 0], [1, 0]]
+      }
+    ],
+    "opcodes_observed": [
+      "WriteUnique",
+      "CompData"
+    ]
+  }
+}

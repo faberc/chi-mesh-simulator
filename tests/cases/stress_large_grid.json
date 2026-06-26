@@ -1,0 +1,76 @@
+{
+  "name": "Stress Case - 8x8 Large Grid Routing",
+  "tier": 5,
+  "grid": {
+    "width": 8,
+    "height": 8
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" },
+      { "x": 7, "y": 0, "type": "RN_F" },
+      { "x": 0, "y": 7, "type": "HN_F" },
+      { "x": 7, "y": 7, "type": "SN_F", "memory": { "0x10": 100, "0x20": 200 } }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [0, 0],
+      "dest": [0, 7],
+      "type": "ReadShared",
+      "address": "0x10"
+    },
+    {
+      "cycle": 5,
+      "src": [7, 0],
+      "dest": [0, 7],
+      "type": "ReadShared",
+      "address": "0x20"
+    }
+  ],
+  "assertions": {
+    "final_cache_states": [
+      {
+        "node": [0, 0],
+        "address": "0x10",
+        "state": "UC",
+        "data": 100
+      },
+      {
+        "node": [7, 0],
+        "address": "0x20",
+        "state": "UC",
+        "data": 200
+      }
+    ],
+    "final_directory_states": [
+      {
+        "node": [0, 7],
+        "address": "0x10",
+        "sharers": [[0, 0]]
+      },
+      {
+        "node": [0, 7],
+        "address": "0x20",
+        "sharers": [[7, 0]]
+      }
+    ],
+    "final_memory_states": [
+      {
+        "node": [7, 7],
+        "address": "0x10",
+        "value": 100
+      },
+      {
+        "node": [7, 7],
+        "address": "0x20",
+        "value": 200
+      }
+    ],
+    "opcodes_observed": [
+      "ReadShared",
+      "CompData"
+    ]
+  }
+}

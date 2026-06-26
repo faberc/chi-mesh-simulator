@@ -1,0 +1,76 @@
+{
+  "name": "Edge Case - Large Scaling Grid",
+  "tier": 4,
+  "grid": {
+    "width": 8,
+    "height": 8
+  },
+  "initial_state": {
+    "nodes": [
+      { "x": 0, "y": 0, "type": "RN_F" },
+      { "x": 7, "y": 7, "type": "RN_F" },
+      { "x": 0, "y": 7, "type": "RN_F" },
+      { "x": 7, "y": 0, "type": "RN_F" },
+      { "x": 3, "y": 3, "type": "HN_F" },
+      { "x": 4, "y": 4, "type": "HN_F" },
+      { "x": 3, "y": 4, "type": "SN_F", "memory": { "0x100": 999 } },
+      { "x": 4, "y": 3, "type": "SN_F" }
+    ]
+  },
+  "transactions": [
+    {
+      "cycle": 1,
+      "src": [0, 0],
+      "dest": [3, 3],
+      "type": "ReadShared",
+      "address": "0x100"
+    }
+  ],
+  "assertions": {
+    "final_cache_states": [
+      {
+        "node": [0, 0],
+        "address": "0x100",
+        "state": "UC",
+        "data": 999
+      }
+    ],
+    "final_directory_states": [
+      {
+        "node": [3, 3],
+        "address": "0x100",
+        "sharers": [[0, 0]]
+      }
+    ],
+    "final_memory_states": [
+      {
+        "node": [3, 4],
+        "address": "0x100",
+        "value": 999
+      }
+    ],
+    "latencies": [
+      {
+        "txn_index": 0,
+        "min_latency": 32,
+        "max_latency": 32
+      }
+    ],
+    "routing_paths": [
+      {
+        "txn_index": 0,
+        "path": [
+          [0, 0], [1, 0], [2, 0], [3, 0], [3, 1], [3, 2], [3, 3],
+          [3, 4],
+          [3, 3],
+          [3, 2], [3, 1], [3, 0], [2, 0], [1, 0], [0, 0]
+        ]
+      }
+    ],
+    "opcodes_observed": [
+      "ReadShared",
+      "CompData",
+      "Comp"
+    ]
+  }
+}
